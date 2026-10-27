@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node server.mjs",
     "start": "node server.mjs",
-    "check": "node --check app.js && node --check theme.js && node --check deadline-model.js && node --check board-model.js && node --check backup.js && node --check server.mjs",
+    "check": "node --check focus-timer.js && node --check app.js && node --check theme.js && node --check deadline-model.js && node --check board-model.js && node --check backup.js && node --check server.mjs",
     "test": "node --test *.test.js"
   }
 }

@@ -1,3 +1,4 @@
+import {createFocusTimer} from './focus-timer.js';
 import {isOverdue, matchesDeadline, deadlineInfo, rescheduleToToday} from './deadline-model.js';
 import {parseBackup, restoreBackup, loadData, saveData} from './backup.js';
 import {stages, statusOf, setStatus, moveTask} from './board-model.js';
@@ -76,7 +77,8 @@ const loaded=loadData(()=>localStorage,initial);
 let data=loaded.data;
 let readWarning=loaded.warning, saveWarning=loaded.warning;
 let deadlineFilter='all';
-let view='kanban',selected=null,query='',priorityOnly=false,board=false,showDone=true,month=new Date(new Date().getFullYear(),new Date().getMonth(),1),timer=null,seconds=25*60;
+let view='kanban',selected=null,query='',priorityOnly=false,board=false,showDone=true,month=new Date(new Date().getFullYear(),new Date().getMonth(),1),timer=null;
+const focusTimer=createFocusTimer();
 const app=document.querySelector('#app'),overlay=document.querySelector('#overlay');
 // Loaded tasks already have a stable stage; startup never overwrites stored data.
 function save(){
@@ -139,7 +141,8 @@ function bind(){app.querySelectorAll('[data-reschedule]').forEach(el=>el.onclick
 let modalTrigger=null;
 function modal(html){if(!overlay.innerHTML)modalTrigger=document.activeElement;overlay.innerHTML=`<div class="modal-backdrop"><section class="modal" role="dialog" aria-modal="true"><button class="modal-close icon-button" title="关闭">${icon('close')}</button>${html}</section></div>`;overlay.querySelector('.modal-close').onclick=closeModal;overlay.querySelector('.modal-backdrop').onclick=e=>{if(e.target===e.currentTarget)closeModal()};(overlay.querySelector('input')||overlay.querySelector('.modal-close')).focus();overlay.querySelector('.modal').onkeydown=e=>{if(e.key!=='Tab')return;const controls=[...overlay.querySelectorAll('button,input,select,textarea,[tabindex="0"]')].filter(el=>!el.disabled);const first=controls[0],last=controls.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}}
 function closeModal(){overlay.innerHTML='';if(modalTrigger?.isConnected)modalTrigger.focus();modalTrigger=null}
-function action(a){if(a==='theme'){themeSettings()}if(a==='import'){importBackup()}if(a==='kanban-home'){view='kanban';selected=null;query='';render()}if(a==='new-card'){newCard('planning')}if(a==='refresh-board'){render();toast('看板已刷新')} if(a==='mobile-menu'){document.body.classList.toggle('nav-open')}if(a==='close-detail'){selected=null;render()}if(a==='list-view'||a==='board-view'){board=a==='board-view';if(view==='calendar')view='today';render()}if(a==='filter'){priorityOnly=!priorityOnly;render()}if(a==='toggle-done'){showDone=!showDone;render()}if(a==='this-month'){month=new Date(new Date().getFullYear(),new Date().getMonth(),1);render()}if(a==='new-list'){modal(`<div class="modal-icon">${icon('folder',26)}</div><h2>给生活，多一点条理</h2><p>创建一个清单，收纳同一类事情。</p><form id="new-list-form"><label class="field-label">清单名称<input name="name" placeholder="例如：旅行计划" required maxlength="30"></label><label class="field-label">清单颜色<input name="color" type="color" value="#8b7bda"></label><button class="primary-button">创建清单</button></form>`);overlay.querySelector('form').onsubmit=e=>{e.preventDefault();const name=e.target.elements.name.value.trim();if(!name)return;const l={id:crypto.randomUUID(),name,color:e.target.elements.color.value};data.lists.push(l);view=l.id;save();closeModal();render();toast('清单已创建')}}if(a==='delete-task'){modal(`<h2>删除这项任务？</h2><p>“${esc(data.tasks.find(t=>t.id===selected)?.title)}”将从此设备移除。</p><button class="primary-button danger" id="confirm-delete">删除任务</button>`);overlay.querySelector('#confirm-delete').onclick=()=>{data.tasks=data.tasks.filter(t=>t.id!==selected);selected=null;save();closeModal();render();toast('任务已删除')}}if(a==='shortcuts')modal(`<h2>让操作，更顺手</h2><div class="shortcut-row"><span>搜索任务</span><kbd>⌘ / Ctrl + K</kbd></div><div class="shortcut-row"><span>新建任务</span><kbd>N</kbd></div><div class="shortcut-row"><span>关闭弹窗或详情</span><kbd>Esc</kbd></div>`);if(a==='export'){const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download=`日序备份-${today}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(url),5000);toast('任务备份已导出')}if(a==='focus'){modal(`<div class="focus-leaf">${icon('leaf',35)}</div><h2>此刻，只专注一件事</h2><p>${esc(data.tasks.find(t=>t.id===selected)?.title||'给自己一段不被打扰的时间')}</p><div class="timer" id="timer">${timerText()}</div><div class="timer-actions"><button class="primary-button" id="start-timer">${timer?'暂停专注':'开始专注'}</button><button class="text-button" id="reset-timer">重新开始</button></div><p class="focus-hint">25 分钟专注，然后好好休息。</p>`);overlay.querySelector('#start-timer').onclick=()=>{if(timer){clearInterval(timer);timer=null}else{timer=setInterval(()=>{seconds--;const display=document.querySelector('#timer');if(display)display.textContent=timerText();if(seconds<=0){clearInterval(timer);timer=null;seconds=25*60;toast('专注完成，休息一下吧');if(document.querySelector('#start-timer'))document.querySelector('#start-timer').textContent='开始专注'}},1000)}overlay.querySelector('#start-timer').textContent=timer?'暂停专注':'继续专注'};overlay.querySelector('#reset-timer').onclick=()=>{clearInterval(timer);timer=null;seconds=25*60;overlay.querySelector('#timer').textContent=timerText();overlay.querySelector('#start-timer').textContent='开始专注'}}}
+function action(a){if(a==='theme'){themeSettings()}if(a==='import'){importBackup()}if(a==='kanban-home'){view='kanban';selected=null;query='';render()}if(a==='new-card'){newCard('planning')}if(a==='refresh-board'){render();toast('看板已刷新')} if(a==='mobile-menu'){document.body.classList.toggle('nav-open')}if(a==='close-detail'){selected=null;render()}if(a==='list-view'||a==='board-view'){board=a==='board-view';if(view==='calendar')view='today';render()}if(a==='filter'){priorityOnly=!priorityOnly;render()}if(a==='toggle-done'){showDone=!showDone;render()}if(a==='this-month'){month=new Date(new Date().getFullYear(),new Date().getMonth(),1);render()}if(a==='new-list'){modal(`<div class="modal-icon">${icon('folder',26)}</div><h2>给生活，多一点条理</h2><p>创建一个清单，收纳同一类事情。</p><form id="new-list-form"><label class="field-label">清单名称<input name="name" placeholder="例如：旅行计划" required maxlength="30"></label><label class="field-label">清单颜色<input name="color" type="color" value="#8b7bda"></label><button class="primary-button">创建清单</button></form>`);overlay.querySelector('form').onsubmit=e=>{e.preventDefault();const name=e.target.elements.name.value.trim();if(!name)return;const l={id:crypto.randomUUID(),name,color:e.target.elements.color.value};data.lists.push(l);view=l.id;save();closeModal();render();toast('清单已创建')}}if(a==='delete-task'){modal(`<h2>删除这项任务？</h2><p>“${esc(data.tasks.find(t=>t.id===selected)?.title)}”将从此设备移除。</p><button class="primary-button danger" id="confirm-delete">删除任务</button>`);overlay.querySelector('#confirm-delete').onclick=()=>{data.tasks=data.tasks.filter(t=>t.id!==selected);selected=null;save();closeModal();render();toast('任务已删除')}}if(a==='shortcuts')modal(`<h2>让操作，更顺手</h2><div class="shortcut-row"><span>搜索任务</span><kbd>⌘ / Ctrl + K</kbd></div><div class="shortcut-row"><span>新建任务</span><kbd>N</kbd></div><div class="shortcut-row"><span>关闭弹窗或详情</span><kbd>Esc</kbd></div>`);if(a==='export'){const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download=`日序备份-${today}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(url),5000);toast('任务备份已导出')}if(a==='focus')showFocus()}
+
 function themeSettings(){
   const theme=window.daylightTheme;
   modal(`<div class="modal-icon">${icon('sun',26)}</div><h2 id="theme-heading">外观主题</h2><p>选一种喜欢的颜色，让整个工作空间保持一致。</p><div class="theme-options" role="group" aria-label="选择外观主题">${theme.themes.map(t=>`<button class="theme-option" data-theme-option="${t.id}" aria-pressed="${theme.current===t.id}"><span class="theme-preview preview-${t.id}" aria-hidden="true"><i></i><span><b></b><b></b></span><span><b></b></span></span><span class="theme-option-info"><strong>${t.name}</strong><span class="theme-selected">${icon('check',15)}</span></span><span class="theme-description">${t.description}</span></button>`).join('')}</div><p class="theme-save-hint" role="status">立即生效，自动记住此设备上的选择。</p>`);
@@ -186,7 +189,33 @@ function importBackup(){
     };
   };
 }
-function timerText(){return `${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`}
+function timerText(seconds){return `${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`}
+function updateFocus(state=focusTimer.read()){
+  if(!state.running){clearInterval(timer);timer=null}
+  const display=overlay.querySelector('#timer');
+  if(display)display.textContent=timerText(state.seconds);
+  const button=overlay.querySelector('#start-timer');
+  if(button)button.textContent=state.running?'暂停专注':state.seconds===0||state.seconds===25*60?'开始专注':'继续专注';
+  if(state.completed)toast('专注完成，休息一下吧');
+  return state;
+}
+function showFocus(){
+  const state=focusTimer.read();
+  modal(`<div class="focus-leaf">${icon('leaf',35)}</div><h2 id="focus-heading">此刻，只专注一件事</h2><p>${esc(data.tasks.find(t=>t.id===selected)?.title||'给自己一段不被打扰的时间')}</p><div class="timer" id="timer" role="timer" aria-label="专注剩余时间">${timerText(state.seconds)}</div><div class="timer-actions"><button class="primary-button" id="start-timer"></button><button class="text-button" id="reset-timer">重新开始</button></div><p class="focus-hint">25 分钟专注，然后好好休息。关闭弹窗后仍会继续计时，刷新页面会重置。</p>`);
+  overlay.querySelector('.modal').setAttribute('aria-labelledby','focus-heading');
+  updateFocus(state);
+  overlay.querySelector('#start-timer').onclick=()=>{
+    const current=updateFocus();
+    const next=current.running?focusTimer.pause():focusTimer.start();
+    if(next.running&&timer===null)timer=setInterval(updateFocus,250);
+    updateFocus(next);
+  };
+  overlay.querySelector('#reset-timer').onclick=()=>updateFocus(focusTimer.reset());
+}
+// Catch up immediately after background throttling or device sleep.
+// The timer model emits completion only once, even if several events arrive.
+window.addEventListener('focus',()=>updateFocus());
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateFocus()});
 document.addEventListener('keydown',e=>{const editing=/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();document.querySelector('#search').focus()}if(e.key==='Escape'){if(overlay.innerHTML)closeModal();else{selected=null;render()}}if(!editing&&!overlay.innerHTML&&e.key.toLowerCase()==='n'&&!e.metaKey&&!e.ctrlKey){e.preventDefault();view==='kanban'?newCard('planning'):document.querySelector('#add-task input').focus()}});
 function kanbanTasks(){return data.tasks.filter(t=>matchesDeadline(t,deadlineFilter,today)&&(!query||(t.title+' '+t.notes+' '+t.tags.join(' ')).toLowerCase().includes(query.toLowerCase())))}
 function renderKanban(){
