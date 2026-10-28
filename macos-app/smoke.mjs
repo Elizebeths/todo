@@ -68,10 +68,7 @@ try {
   await page.reload();
   await expect.poll(()=>page.evaluate(()=>Boolean(navigator.serviceWorker.controller))).toBe(true);
   // Every root web resource is byte-identical inside the signed app bundle.
-  const manifest=await application.evaluate(async({app})=>{
-    const fs=await import('node:fs/promises');const path=await import('node:path');
-    return JSON.parse(await fs.readFile(path.join(app.getAppPath(),'web-manifest.json'),'utf8'));
-  });
+  const manifest=JSON.parse(await readFile('macos-app/build/web-manifest.json','utf8'));
   for(const [file,hash] of Object.entries(manifest.files)){
     if(file==='server.mjs')continue;
     const response=await page.request.get(`http://127.0.0.1:17839/${file}`);
