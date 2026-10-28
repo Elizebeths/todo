@@ -22,7 +22,7 @@ test('desktop ships unchanged web resources and serves every SW asset with the o
   const base=`http://127.0.0.1:${server.address().port}`;
   const sw=await readFile(join(dir,'app/web/sw.js'),'utf8');
   const assets=[...sw.matchAll(/"(\/[^"\s]*)"/g)].map(m=>m[1]);
-  for(const path of new Set([...assets,'/sw.js'])){
+  for(const path of new Set([...assets,'/sw.js',...Object.keys(manifest.files).filter(f=>f!=='server.mjs').map(f=>'/'+f)])){
     const response=await fetch(base+path);assert.equal(response.status,200,path);
     const file=path==='/'?'index.html':path.slice(1);
     assert.deepEqual(Buffer.from(await response.arrayBuffer()),await readFile(join(dir,'app/web',file)),path);
@@ -30,6 +30,7 @@ test('desktop ships unchanged web resources and serves every SW asset with the o
   assert.equal((await fetch(base+'/main.mjs')).status,404);
   assert.equal((await fetch(base+'/package.json')).status,404);
   const runtime=JSON.parse(await readFile(join(dir,'app/package.json'),'utf8'));
+  assert.equal(manifest.files['playwright.config.js'],undefined);
   assert.equal(runtime.version,manifest.version);assert.equal(runtime.devDependencies,undefined);
 });
 

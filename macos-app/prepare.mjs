@@ -12,7 +12,7 @@ export async function prepare(destination=resolve(here,'build')) {
   await mkdir(resolve(destination,'web'),{recursive:true});
   // Copy every shipped root module, never tests, server secrets or dependencies.
   const files=(await readdir(root)).filter(name =>
-    (name.endsWith('.js')&&!name.endsWith('.test.js')) ||
+    (name.endsWith('.js')&&!name.endsWith('.test.js')&&!name.endsWith('.config.js')) ||
     ['index.html','style.css','manifest.webmanifest','icon.svg','server.mjs'].includes(name)).sort();
   const manifest={version:source.version,files:{}};
   for(const name of files){
