@@ -78,3 +78,7 @@ Playwright 为开发依赖，运行应用无需安装它。支持使用已安装
 `BENCHMARK.json` 记录本机 100/1,000/5,000 条数据的 p50/p95。搜索/切视图/月历度量同步 JS 筛选及重建 DOM，不含绘制、输入防抖；保存度量实际仓储校验、锁和 localStorage 写入。它不能代表其他设备或用户体验全链路延迟。
 
 模块包括 `storage.js`（并发与快照）、`backup.js`（兼容校验）、`task-commands.js`（编辑命令）、`recurrence.js`（日历规则与完成事件）、`focus-session.js`（持久专注）、四个 `*-view.js`（任务展示）、`workspace-tools.js`（规划及恢复工具）。原模型模块和兼容测试继续保留。
+
+## macOS 桌面应用
+
+独立封装源码与构建说明见 [macos-app/README.md](macos-app/README.md)。桌面版复用本仓库全部网页业务代码，提供 Apple Silicon 和 Intel 的 `Daylight.app`；在 [Build macOS app](https://github.com/Elizebeths/todo/actions/workflows/macos-app.yml) 成功运行的 Artifacts 下载。桌面数据独立保存，网页迁移需先导出备份再恢复。应用仅 ad-hoc 签名，未进行 Apple 公证。

@@ -1,0 +1,21 @@
+{
+  "name": "daylight-macos",
+  "productName": "Daylight",
+  "version": "1.7.0",
+  "private": true,
+  "type": "module",
+  "main": "main.mjs",
+  "description": "日序 Daylight — 与网页版共用源码的离线 macOS 应用",
+  "license": "Apache-2.0",
+  "scripts": {
+    "prepare:web": "node prepare.mjs",
+    "start": "npm run prepare:web && electron build",
+    "test": "node --test desktop.test.mjs",
+    "build": "node package.mjs",
+    "smoke": "node smoke.mjs"
+  },
+  "devDependencies": {
+    "@electron/packager": "20.3.0",
+    "electron": "45.1.0"
+  }
+}

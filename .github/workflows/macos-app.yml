@@ -1,0 +1,66 @@
+name: Build macOS app
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**.js'
+      - '**.mjs'
+      - '**.html'
+      - '**.css'
+      - '**.svg'
+      - 'manifest.webmanifest'
+      - 'package*.json'
+      - 'macos-app/**'
+      - '.github/workflows/macos-app.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  package:
+    name: macOS ${{ matrix.arch }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            arch: arm64
+          - runner: macos-15-intel
+            arch: x64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            macos-app/package-lock.json
+      - run: npm ci
+      - run: npm ci --prefix macos-app
+      - run: npm run check && npm test && npm test --prefix macos-app
+      - name: Build native app with ad-hoc signature
+        run: npm run build --prefix macos-app -- ${{ matrix.arch }}
+      - name: Verify native bundle and signature
+        run: |
+          APP="macos-app/dist/Daylight-darwin-${{ matrix.arch }}/Daylight.app"
+          codesign --verify --deep --strict --verbose=2 "$APP"
+          file "$APP/Contents/MacOS/Daylight"
+          plutil -lint "$APP/Contents/Info.plist"
+      - name: Native packaged app acceptance
+        run: node macos-app/smoke.mjs "macos-app/dist/Daylight-darwin-${{ matrix.arch }}/Daylight.app/Contents/MacOS/Daylight"
+      - name: Archive app preserving permissions and symlinks
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent "macos-app/dist/Daylight-darwin-${{ matrix.arch }}/Daylight.app" "macos-app/dist/Daylight-macOS-${{ matrix.arch }}.zip"
+          cd macos-app/dist
+          shasum -a 256 "Daylight-macOS-${{ matrix.arch }}.zip" > "Daylight-macOS-${{ matrix.arch }}.zip.sha256"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Daylight-macOS-${{ matrix.arch }}
+          path: |
+            macos-app/dist/Daylight-macOS-${{ matrix.arch }}.zip
+            macos-app/dist/Daylight-macOS-${{ matrix.arch }}.zip.sha256
+            macos-app/dist/smoke-${{ matrix.arch }}.*
+          if-no-files-found: error
+          retention-days: 90
