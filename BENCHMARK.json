@@ -1,0 +1,66 @@
+{
+  "at": "2026-10-28T06:38:36.066Z",
+  "device": "darwin arm64 Apple M5",
+  "browser": "156.0.8078.4",
+  "method": "JS synchronous filter/render duration (excludes paint); save measures repository validation, locks and localStorage; no artificial CPU throttling",
+  "samples": 10,
+  "rows": [
+    {
+      "count": 100,
+      "search": {
+        "p50": 8,
+        "p95": 12.2
+      },
+      "view": {
+        "p50": 6.1,
+        "p95": 9
+      },
+      "calendar": {
+        "p50": 1.9,
+        "p95": 8
+      },
+      "save": {
+        "p50": 0.6,
+        "p95": 5.1
+      }
+    },
+    {
+      "count": 1000,
+      "search": {
+        "p50": 74.1,
+        "p95": 95.1
+      },
+      "view": {
+        "p50": 52.2,
+        "p95": 72.2
+      },
+      "calendar": {
+        "p50": 5.8,
+        "p95": 8.3
+      },
+      "save": {
+        "p50": 3.9,
+        "p95": 7.7
+      }
+    },
+    {
+      "count": 5000,
+      "search": {
+        "p50": 371.9,
+        "p95": 501.6
+      },
+      "view": {
+        "p50": 263.3,
+        "p95": 341.6
+      },
+      "calendar": {
+        "p50": 19.6,
+        "p95": 24.5
+      },
+      "save": {
+        "p50": 17,
+        "p95": 19.1
+      }
+    }
+  ]
+}

@@ -12,7 +12,11 @@ export function createFocusTimer(durationMs = 25 * 60 * 1000, now = Date.now) {
         completed = true;
       }
     }
-    return {seconds:Math.ceil(remainingMs / 1000), running:deadline !== null, completed};
+    return {
+      seconds: Math.ceil(remainingMs / 1000),
+      running: deadline !== null,
+      completed,
+    };
   }
 
   return {
@@ -27,12 +31,12 @@ export function createFocusTimer(durationMs = 25 * 60 * 1000, now = Date.now) {
     pause() {
       const state = read();
       deadline = null;
-      return {...state, running:false};
+      return { ...state, running: false };
     },
     reset() {
       deadline = null;
       remainingMs = durationMs;
       return read();
-    }
+    },
   };
 }

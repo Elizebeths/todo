@@ -1,12 +1,20 @@
 {
   "name": "daylight-todo",
-  "version": "1.1.0",
+  "version": "1.7.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "node server.mjs",
     "start": "node server.mjs",
-    "check": "node --check task-tools.js && node --check focus-timer.js && node --check app.js && node --check theme.js && node --check deadline-model.js && node --check board-model.js && node --check backup.js && node --check server.mjs",
-    "test": "node --test *.test.js"
+    "check": "node scripts/check.mjs",
+    "test": "node --test *.test.js",
+    "test:browser": "playwright test",
+    "format": "prettier --write *.js *.mjs *.css *.html tests/*.js",
+    "benchmark": "node scripts/benchmark.mjs",
+    "preview:screenshots": "node scripts/preview.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "prettier": "^3.9.10"
   }
 }

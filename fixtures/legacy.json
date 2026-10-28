@@ -1,0 +1,1 @@
+{"lists":[{"id":"work","name":"工作","color":"#8b7bda"}],"tasks":[{"id":"old","title":"旧版任务","list":"work","date":"2026-10-28","priority":1,"notes":"保留原备注","tags":["设计"],"subtasks":[{"text":"第一步","done":false}],"done":false}]}
