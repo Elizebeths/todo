@@ -10,7 +10,7 @@ test('server serves browser assets, supports HEAD and rejects private files and 
   await once(server,'listening');
   t.after(()=>new Promise(resolve=>{server.close(resolve);server.closeAllConnections()}));
   const base=`http://127.0.0.1:${server.address().port}`;
-  for(const path of ['/', '/index.html', '/style.css', '/app.js', '/theme.js', '/board-model.js', '/backup.js', '/deadline-model.js', '/focus-timer.js']) {
+  for(const path of ['/', '/index.html', '/style.css', '/app.js', '/theme.js', '/board-model.js', '/backup.js', '/deadline-model.js', '/focus-timer.js', '/task-tools.js']) {
     const response=await fetch(base+path);
     assert.equal(response.status,200,path);
     assert.match(response.headers.get('content-type'),/text\//);

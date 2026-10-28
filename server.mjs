@@ -7,7 +7,7 @@ const root = fileURLToPath(new URL('.', import.meta.url));
 const assets = new Map([
   ['/index.html', 'text/html; charset=utf-8'],
   ['/style.css', 'text/css; charset=utf-8'],
-  ...['app.js', 'theme.js', 'board-model.js', 'backup.js', 'deadline-model.js', 'focus-timer.js'].map(name => [`/${name}`, 'text/javascript; charset=utf-8'])
+  ...['app.js', 'theme.js', 'board-model.js', 'backup.js', 'deadline-model.js', 'focus-timer.js', 'task-tools.js'].map(name => [`/${name}`, 'text/javascript; charset=utf-8'])
 ]);
 
 export function createServer() {
