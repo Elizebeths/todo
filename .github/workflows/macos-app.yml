@@ -55,6 +55,14 @@ jobs:
           ditto -c -k --sequesterRsrc --keepParent "macos-app/dist/Daylight-darwin-${{ matrix.arch }}/Daylight.app" "macos-app/dist/Daylight-macOS-${{ matrix.arch }}.zip"
           cd macos-app/dist
           shasum -a 256 "Daylight-macOS-${{ matrix.arch }}.zip" > "Daylight-macOS-${{ matrix.arch }}.zip.sha256"
+      - name: Verify and launch the extracted distribution
+        run: |
+          DEST="$RUNNER_TEMP/daylight-distribution"
+          ditto -x -k "macos-app/dist/Daylight-macOS-${{ matrix.arch }}.zip" "$DEST"
+          APP="$DEST/Daylight.app"
+          codesign --verify --deep --strict --verbose=2 "$APP"
+          codesign -d --entitlements :- "$APP"
+          node macos-app/smoke.mjs "$APP/Contents/MacOS/Daylight"
       - uses: actions/upload-artifact@v4
         with:
           name: Daylight-macOS-${{ matrix.arch }}

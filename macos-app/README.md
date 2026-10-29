@@ -42,6 +42,8 @@ Linux 可组装 macOS 包，但不能执行 macOS 二进制，也无法完成原
 
 ## 验证
 
+签名配置显式清除 Electron 原签名的 flags，并为无 Team ID 的 ad-hoc 应用设置 `disable-library-validation`，避免启动时出现 `different Team IDs`。CI 还会重新解压最终 ZIP，校验签名并运行完整原生验收；仅校验签名通过并不足以证明应用可以启动。
+
 - 根目录 `npm run check && npm test`：原有 56 项模型/HTTP 回归。
 - `npm test --prefix macos-app`：资源复制校验、SW 全资源 HTTP 可达、私有文件拒绝、版本一致性与安全边界。
 - Actions 在 Apple Silicon 和 Intel 上分别生成 `.app`、验证签名和 Mach-O，并启动打包后的真实应用：创建/编辑/完成、中文内容、主题、专注状态、文件导出与恢复、Web Locks、离线缓存及退出重开数据持久化。使用独立临时配置，只操作测试数据。

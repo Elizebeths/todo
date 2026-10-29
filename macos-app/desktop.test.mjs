@@ -8,6 +8,19 @@ import {once} from 'node:events';
 import {pathToFileURL} from 'node:url';
 import {prepare} from './prepare.mjs';
 import {DESKTOP_PORT,DESKTOP_ORIGIN,isAppURL,webPreferences} from './desktop-config.mjs';
+import {adHocSignOptions} from './signing-config.mjs';
+
+test('ad-hoc signing replaces inherited flags and permits loading frameworks without a Team ID',()=>{
+  assert.equal(adHocSignOptions.identity,'-');
+  for(const file of ['Daylight.app','Daylight.app/Contents/Frameworks/Electron Framework.framework','Daylight Helper.app']){
+    const options=adHocSignOptions.optionsForFile(file);
+    assert.equal(options.signatureFlags,'0');
+    assert.equal(options.hardenedRuntime,false);
+    assert.equal(options.timestamp,'none');
+    assert.ok(options.entitlements.includes('com.apple.security.cs.disable-library-validation'));
+    assert.ok(options.entitlements.includes('com.apple.security.cs.allow-jit'));
+  }
+});
 
 test('desktop ships unchanged web resources and serves every SW asset with the original server',async t=>{
   const dir=await mkdtemp(join(tmpdir(),'daylight-build-'));
